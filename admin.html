@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Avril</title>
+    <link rel="stylesheet" href="static/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Pantalla de login -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-box">
+            <h2><i class="fas fa-lock"></i> Acceso Administrativo</h2>
+            <p>Ingresa la contraseña para acceder al panel</p>
+            <!-- MODIFICADO: Campo de contraseña con autocompletado desactivado -->
+            <input type="password" id="adminPassword" placeholder="Contraseña" autocomplete="new-password" name="admin_password">
+            <button onclick="verificarPassword()">Acceder</button>
+        </div>
+    </div>
+
+    <!-- Panel principal (oculto inicialmente) -->
+    <div id="adminPanel" class="admin-panel" style="display: none;">
+        <div class="header">
+            <h1><i class="fas fa-crown"></i> Panel de Administración - Joyería Avril</h1>
+            <div class="stats">
+                <span id="productCount">0 productos</span>
+                <a href="index.html" class="back-btn">
+                    <i class="fas fa-store"></i> Ver Tienda
+                </a>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Formulario para agregar producto SIMPLIFICADO -->
+            <div class="form-section">
+                <h2><i class="fas fa-plus"></i> Agregar Nuevo Producto</h2>
+                
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="productName"><i class="fas fa-tag"></i> Nombre del Producto *</label>
+                        <input type="text" id="productName" placeholder="Ej: Anillo de Diamantes" required>
+                    </div>
+                    
+                    <!-- Categoría -->
+                    <div class="form-group">
+                        <label for="productCategory">
+                            <i class="fas fa-tags"></i> Categoría *
+                        </label>
+                        <select id="productCategory" required>
+                            <option value="">Selecciona una categoría</option>
+                            <option value="anillos">Anillos</option>
+                            <option value="collares">Collares</option>
+                            <option value="pulseras">Pulseras</option>
+                            <option value="aros">Aros</option>
+                            <option value="relojes">Relojes</option>
+                            <option value="piercings">Piercings</option>
+                        </select>
+                        <small>Selecciona la categoría para que aparezca en la tienda</small>
+                    </div>
+                    
+                    <!-- Descripción Corta -->
+                    <div class="form-group">
+                        <label for="productDescription">
+                            <i class="fas fa-align-left"></i> Descripción Corta *
+                        </label>
+                        <textarea id="productDescription" 
+                                  rows="3" 
+                                  placeholder="Descripción breve del producto (máx 150 caracteres)"
+                                  maxlength="150"
+                                  required></textarea>
+                        <div class="char-counter">
+                            <span id="descCounter">0</span>/150 caracteres
+                        </div>
+                    </div>
+                    
+                    <!-- IMAGEN: SUBIR DESDE COMPUTADORA -->
+                    <div class="form-group">
+                        <label><i class="fas fa-image"></i> Imagen del Producto *</label>
+                        
+                        <div class="image-option-simple">
+                            <h3><i class="fas fa-upload"></i> Subir Imagen desde tu Computadora</h3>
+                            
+                            <div class="file-upload-area" id="fileUploadArea">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Arrastra y suelta tu imagen aquí o haz clic para seleccionar</p>
+                                <small>Formatos permitidos: JPG, PNG, GIF (Máx: 5MB)</small>
+                                <input type="file" 
+                                       id="imageUpload" 
+                                       accept=".jpg,.jpeg,.png,.gif,.webp"
+                                       style="display: none;">
+                                <button type="button" class="select-file-btn" onclick="document.getElementById('imageUpload').click()">
+                                    <i class="fas fa-folder-open"></i> Seleccionar Archivo
+                                </button>
+                            </div>
+                            
+                            <!-- Información del archivo seleccionado -->
+                            <div id="fileInfo" class="file-info" style="display: none;">
+                                <p><strong>Archivo seleccionado:</strong> <span id="fileName"></span></p>
+                                <p><strong>Tamaño:</strong> <span id="fileSize"></span></p>
+                                <button type="button" class="change-file-btn" onclick="document.getElementById('imageUpload').click()">
+                                    <i class="fas fa-exchange-alt"></i> Cambiar Imagen
+                                </button>
+                            </div>
+                            
+                            <!-- URL alternativa (para desarrollo) -->
+                            <div class="url-alternative">
+                                <p><strong>Opcional:</strong> Si ya tienes una imagen en internet, pega la URL aquí:</p>
+                                <input type="url" 
+                                       id="imageUrl" 
+                                       placeholder="https://ejemplo.com/imagen.jpg"
+                                       class="url-input">
+                            </div>
+                        </div>
+                        
+                        <!-- Vista previa -->
+                        <div class="image-preview">
+                            <h4>Vista Previa:</h4>
+                            <div id="previewContainer">
+                                <div class="empty-preview">
+                                    <i class="far fa-image"></i>
+                                    <p>Se verá la imagen aquí al seleccionar un archivo</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="whatsapp-notice">
+                        <i class="fab fa-whatsapp"></i>
+                        <p><strong>Nota:</strong> Todos los productos usarán el mismo número de WhatsApp: <code>+59175833235</code></p>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Guardar Producto
+                    </button>
+                </form>
+
+                <!-- Exportar para GitHub -->
+                <div class="export-section">
+                    <h3><i class="fab fa-github"></i> Publicar en la Tienda</h3>
+                    <p>Para que todos vean los productos, genera el archivo JSON y súbelo a GitHub.</p>
+                    <button onclick="exportarJSON()" class="github-btn">
+                        <i class="fas fa-file-export"></i> Generar Archivo JSON
+                    </button>
+                    <div class="export-instructions">
+                        <p><strong>Instrucciones:</strong></p>
+                        <ol>
+                            <li>Descarga el archivo JSON</li>
+                            <li>Descarga todas las imágenes que subiste</li>
+                            <li>Crea una carpeta "imagenes" en tu repositorio GitHub</li>
+                            <li>Sube las imágenes a la carpeta "imagenes"</li>
+                            <li>Sube el JSON a <code>data/products_joyeria.json</code></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lista de productos guardados -->
+            <div class="products-section">
+                <h2><i class="fas fa-boxes"></i> Productos Guardados (<span id="totalProducts">0</span>)</h2>
+                <div class="controls">
+                    <button onclick="cargarDesdeArchivo()" class="btn-load">
+                        <i class="fas fa-file-import"></i> Cargar desde archivo
+                    </button>
+                    <button onclick="limpiarTodo()" class="btn-clear">
+                        <i class="fas fa-trash"></i> Limpiar Todo
+                    </button>
+                </div>
+                
+                <div class="products-list" id="productsList">
+                    <!-- Los productos se cargarán aquí -->
+                    <div class="empty-list">
+                        <i class="fas fa-box-open"></i>
+                        <p>No hay productos guardados</p>
+                        <small>Agrega el primero usando el formulario</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para mensajes -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <div id="modalIcon"></div>
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <button onclick="cerrarModal()">Aceptar</button>
+        </div>
+    </div>
+
+    <script src="/static/js/admin-script.js"></script>
+    <script>
+        // Contador de caracteres para descripción
+        document.getElementById('productDescription').addEventListener('input', function() {
+            const counter = document.getElementById('descCounter');
+            counter.textContent = this.value.length;
+            
+            if (this.value.length > 140) {
+                counter.style.color = '#e74c3c';
+            } else if (this.value.length > 120) {
+                counter.style.color = '#f39c12';
+            } else {
+                counter.style.color = '#7f8c8d';
+            }
+        });
+        
+        // Configurar subida de archivos
+        const fileUpload = document.getElementById('imageUpload');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInfo = document.getElementById('fileInfo');
+        
+        // Evento para seleccionar archivo
+        fileUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                mostrarInformacionArchivo(file);
+                mostrarVistaPreviaArchivo(file);
+            }
+        });
+        
+        // Arrastrar y soltar
+        fileUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.background = '#f0f0f0';
+            this.style.borderColor = '#764ba2';
+        });
+        
+        fileUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.background = '';
+            this.style.borderColor = '';
+        });
+        
+        fileUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.background = '';
+            this.style.borderColor = '';
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                fileUpload.files = e.dataTransfer.files;
+                mostrarInformacionArchivo(file);
+                mostrarVistaPreviaArchivo(file);
+            } else {
+                alert('Por favor, selecciona solo archivos de imagen (JPG, PNG, GIF)');
+            }
+        });
+        
+        function mostrarInformacionArchivo(file) {
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            fileUploadArea.style.display = 'none';
+            fileInfo.style.display = 'block';
+        }
+        
+        function mostrarVistaPreviaArchivo(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewContainer = document.getElementById('previewContainer');
+                previewContainer.innerHTML = `
+                    <div class="preview-content">
+                        <img src="${e.target.result}" 
+                             alt="Vista previa" 
+                             class="preview-image">
+                        <div class="preview-info">
+                            <p><small>${file.name} (${(file.size / 1024).toFixed(0)} KB)</small></p>
+                        </div>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>

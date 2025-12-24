@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - Joyería Avril</title>
+    <link rel="stylesheet" href="static/css/productos.css">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <a href="index.html">
+                        <span class="logo-icon">💎</span>
+                        <span class="logo-text">Joyería<span class="logo-accent">Avril</span></span>
+                    </a>
+                </div>
+
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">
+                            <i class="fas fa-home"></i> Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=anillos" class="nav-link">
+                            <i class="fas fa-ring"></i> Anillos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=collares" class="nav-link">
+                            <i class="fas fa-gem"></i> Collares
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=pulseras" class="nav-link">
+                            <i class="fas fa-circle-notch"></i> Pulseras
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=aros" class="nav-link">
+                            <i class="fas fa-circle-notch"></i> Aros
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=relojes" class="nav-link">
+                            <i class="fas fa-clock"></i> Relojes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=piercings" class="nav-link">
+                            <i class="fas fa-star"></i> Piercings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="admin.html" class="nav-link admin-link">
+                            <i class="fas fa-lock"></i> Admin
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="header-icons">
+                    <a href="https://wa.me/59175833235" class="whatsapp-btn" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Filtros de Categorías -->
+    <section class="filters-section">
+        <div class="container">
+            <div class="section-header">
+                <h1 class="section-title">Nuestra Colección</h1>
+                <p class="section-subtitle">Descubre nuestras piezas exclusivas</p>
+            </div>
+
+            <!-- Barra de búsqueda -->
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar productos...">
+                    <button id="clearSearch" class="clear-search-btn" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="search-info">
+                    <span id="searchResultsCount">Todos los productos</span>
+                </div>
+            </div>
+
+            <!-- Filtros de categoría -->
+            <div class="category-filters">
+                <button class="category-filter active" data-category="all">
+                    <i class="fas fa-th-large"></i> Todos
+                </button>
+                <button class="category-filter" data-category="anillos">
+                    <i class="fas fa-ring"></i> Anillos
+                </button>
+                <button class="category-filter" data-category="collares">
+                    <i class="fas fa-gem"></i> Collares
+                </button>
+                <button class="category-filter" data-category="pulseras">
+                    <i class="fas fa-circle-notch"></i> Pulseras
+                </button>
+                <button class="category-filter" data-category="aros">
+                    <i class="fas fa-circle-notch"></i> Aros
+                </button>
+                <button class="category-filter" data-category="relojes">
+                    <i class="fas fa-clock"></i> Relojes
+                </button>
+                <button class="category-filter" data-category="piercings">
+                    <i class="fas fa-star"></i> Piercings
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Estado de carga -->
+            <div id="loadingState" class="loading-state">
+                <div class="loader"></div>
+                <p>Cargando productos...</p>
+            </div>
+
+            <!-- Sin productos -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <h3>No hay productos disponibles</h3>
+                <p>Pronto agregaremos nuevas piezas a nuestra colección.</p>
+                <a href="index.html" class="btn-primary">
+                    <i class="fas fa-home"></i> Volver al inicio
+                </a>
+            </div>
+
+            <!-- Sin resultados de búsqueda -->
+            <div id="noResultsState" class="no-results-state" style="display: none;">
+                <div class="no-results-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>No se encontraron productos</h3>
+                <p>Intenta con otros términos de búsqueda o explora nuestras categorías.</p>
+                <button id="clearFiltersBtn" class="btn-secondary">
+                    <i class="fas fa-times"></i> Limpiar filtros
+                </button>
+            </div>
+
+            <!-- Grid de productos -->
+            <div id="productsGrid" class="products-grid">
+                <!-- Las cards se generarán aquí con JavaScript -->
+            </div>
+
+            <!-- Paginación -->
+            <div id="pagination" class="pagination" style="display: none;">
+                <button id="prevPage" class="page-btn">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                <span id="pageInfo" class="page-info">Página 1 de 1</span>
+                <button id="nextPage" class="page-btn">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal sin stock (SIN BOTÓN DE WHATSAPP) -->
+    <div id="noStockModal" class="no-stock-modal" style="display: none;">
+        <div class="no-stock-content">
+            <div class="no-stock-icon">
+                <i class="fas fa-gem"></i>
+            </div>
+            <h2 id="noStockCategory">Sin stock disponible</h2>
+            <p id="noStockMessage">Actualmente no tenemos productos disponibles en esta categoría.</p>
+            <div class="no-stock-actions">
+                <button id="viewOtherCategories" class="btn-primary">
+                    <i class="fas fa-th-large"></i> Ver otras categorías
+                </button>
+                <button id="goToHome" class="btn-secondary">
+                    <i class="fas fa-home"></i> Volver al inicio
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="logo">
+                        <a href="index.html">
+                            <span class="logo-icon">💎</span>
+                            <span class="logo-text">Joyería<span class="logo-accent">Avril</span></span>
+                        </a>
+                    </div>
+                    <p class="footer-about">Joyería fina con años de experiencia creando piezas únicas que capturan momentos especiales.</p>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/avril.joyeria_scz?igsh=dGxqcmV2aDQwNDRj" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@avril.joyeria?_r=1&_t=ZM-92V4CJh183M" target="_blank"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h3 class="footer-title">Categorías</h3>
+                    <ul class="footer-links">
+                        <li><a href="productos.html?cat=anillos">Anillos</a></li>
+                        <li><a href="productos.html?cat=collares">Collares</a></li>
+                        <li><a href="productos.html?cat=pulseras">Pulseras</a></li>
+                        <li><a href="productos.html?cat=aros">Aros</a></li>
+                        <li><a href="productos.html?cat=relojes">Relojes</a></li>
+                        <li><a href="productos.html?cat=piercings">Piercings</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3 class="footer-title">Contacto</h3>
+                    <ul class="footer-contact">
+                        <li><i class="fas fa-map-marker-alt"></i> Centro comercial Las Brisas 4to anillo</li>
+                        <li><i class="fas fa-phone"></i> +591 75833235</li>
+                        <li><i class="fas fa-envelope"></i> Correo: consultas.avril@gmail.com</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 Joyería Avril. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botón flotante de WhatsApp -->
+    <a href="https://wa.me/59175833235" class="floating-whatsapp" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="static/js/main.js"></script>
+    <script src="static/js/productos.js"></script>
+</body>
+</html>

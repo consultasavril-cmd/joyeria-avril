@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avril | Joyería Fina</title>
+    <!-- RUTA CORREGIDA -->
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <!-- Header y Navegación - CORREGIDO (solo UN header) -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="index.html">
+                        <span class="logo-icon">💎</span>
+                        <span class="logo-text">Joyería<span class="logo-accent">Avril</span></span>
+                    </a>
+                </div>
+
+                <!-- Menú de Navegación -->
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link active">
+                            <i class="fas fa-home"></i> Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=anillos" class="nav-link"> <!-- CAMBIADO -->
+                            <i class="fas fa-ring"></i> Anillos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=collares" class="nav-link"> <!-- CAMBIADO -->
+                            <i class="fas fa-gem"></i> Collares
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=pulseras" class="nav-link"> <!-- CAMBIADO -->
+                            <i class="fas fa-circle-notch"></i> Pulseras
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=aros" class="nav-link"> <!-- CAMBIADO -->
+                            <i class="fas fa-circle-notch"></i> Aros
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=relojes" class="nav-link"> <!-- CAMBIADO -->
+                            <i class="fas fa-clock"></i> Relojes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="productos.html?cat=piercings" class="nav-link"> <!-- CAMBIADO -->
+                            <i class="fas fa-star"></i> Piercings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="admin.html" class="nav-link admin-link">
+                            <i class="fas fa-lock"></i> Admin
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Iconos del Header -->
+                <div class="header-icons">
+                    <a href="https://wa.me/59175833235" class="whatsapp-btn" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                        <span class="tooltip"></span>
+                    </a>
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Joyas que Capturan Momentos</h1>
+                <p class="hero-subtitle">Descubre nuestra exclusiva colección de piezas únicas, elaboradas con los más altos estándares de calidad y diseño.</p>
+                <a href="#colecciones" class="hero-btn">Explorar Colección</a>
+            </div>
+        </div>
+        <div class="hero-scroll">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+        <!-- Sección de Categorías -->
+    <section class="categories" id="colecciones">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Nuestras Colecciones</h2>
+                <p class="section-subtitle">Selecciona una categoría para descubrir nuestras piezas exclusivas</p>
+            </div>
+
+            <div class="categories-grid">
+                <!-- Anillos -->
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-ring"></i>
+                    </div>
+                    <h3 class="category-title">Anillos</h3>
+                    <p class="category-desc">Desde compromiso hasta diseño contemporáneo</p>
+                    <a href="productos.html?cat=anillos" class="category-link"> <!-- CAMBIADO -->
+                        Ver Colección <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <div class="category-bg" style="background-image: url('/archivos/NoTocarEstasFotos/fondoAnillo.jpeg');"></div>
+                </div>
+
+                <!-- Collares -->
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h3 class="category-title">Collares</h3>
+                    <p class="category-desc">Elegancia que realza tu estilo personal</p>
+                    <a href="productos.html?cat=collares" class="category-link"> <!-- CAMBIADO -->
+                        Ver Colección <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <div class="category-bg" style="background-image: url('/archivos/NoTocarEstasFotos/fondoCollar.jpeg');"></div>
+                </div>
+
+                <!-- Pulseras -->
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-circle-notch"></i>
+                    </div>
+                    <h3 class="category-title">Pulseras</h3>
+                    <p class="category-desc">Detalles que complementan tu elegancia</p>
+                    <a href="productos.html?cat=pulseras" class="category-link"> <!-- CAMBIADO -->
+                        Ver Colección <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <div class="category-bg" style="background-image: url('/archivos/NoTocarEstasFotos/fondoPulsera.jpeg');"></div>
+                </div>
+
+                <!-- Aros -->
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-circle-notch"></i>
+                    </div>
+                    <h3 class="category-title">Aros</h3>
+                    <p class="category-desc">Desde minimalistas hasta diseños audaces</p>
+                    <a href="productos.html?cat=aros" class="category-link"> <!-- CAMBIADO -->
+                        Ver Colección <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <div class="category-bg" style="background-image: url('/archivos/NoTocarEstasFotos/fondoArgollas.jpeg');"></div>
+                </div>
+
+                <!-- Relojes -->
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="category-title">Relojes</h3>
+                    <p class="category-desc">Precisión y estilo en cada segundo</p>
+                    <a href="productos.html?cat=relojes" class="category-link"> <!-- CAMBIADO -->
+                        Ver Colección <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <div class="category-bg" style="background-image: url('/archivos/NoTocarEstasFotos/fondoReloj.jpeg');"></div>
+                </div>
+
+                <!-- Piercings -->
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3 class="category-title">Piercings</h3>
+                    <p class="category-desc">Expresión única en cada detalle</p>
+                    <a href="productos.html?cat=piercings" class="category-link"> <!-- CAMBIADO -->
+                        Ver Colección <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <div class="category-bg" style="background-image: url('/archivos/NoTocarEstasFotos/fondoPiercings.jpeg');"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Contacto (DIRECTAMENTE después de categorías) -->
+    <section class="contact-section">
+        <div class="container">
+            <div class="contact-content">
+                <h2 class="contact-title">¿Buscas algo especial?</h2>
+                <p class="contact-text">Contáctanos directamente por WhatsApp para asesoría personalizada, pedidos especiales o consultas sobre nuestras piezas.</p>
+                <a href="https://wa.me/59175833235" class="whatsapp-cta" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
+                </a>
+                <p class="contact-note">Horario de atención: Jueves a domingo 11 am - 11 pm</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="logo">
+                        <a href="index.html">
+                            <span class="logo-icon">💎</span>
+                            <span class="logo-text">Joyería<span class="logo-accent">Avril</span></span>
+                        </a>
+                    </div>
+                    <p class="footer-about">Joyería fina con años de experiencia creando piezas únicas que capturan momentos especiales.</p>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/avril.joyeria_scz?igsh=dGxqcmV2aDQwNDRj" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@avril.joyeria?_r=1&_t=ZM-92V4CJh183M" target="_blank"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h3 class="footer-title">Categorías</h3>
+                    <ul class="footer-links">
+                        <li><a href="productos.html?cat=anillos">Anillos</a></li> <!-- CAMBIADO -->
+                        <li><a href="productos.html?cat=collares">Collares</a></li> <!-- CAMBIADO -->
+                        <li><a href="productos.html?cat=pulseras">Pulseras</a></li> <!-- CAMBIADO -->
+                        <li><a href="productos.html?cat=aros">Aros</a></li> <!-- CAMBIADO -->
+                        <li><a href="productos.html?cat=relojes">Relojes</a></li> <!-- CAMBIADO -->
+                        <li><a href="productos.html?cat=piercings">Piercings</a></li> <!-- CAMBIADO -->
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3 class="footer-title">Contacto</h3>
+                    <ul class="footer-contact">
+                        <li><i class="fas fa-map-marker-alt"></i> Centro comercial Las Brisas 4to anillo</li>
+                        <li><i class="fas fa-phone"></i> +591 75833235</li>
+                        <li><i class="fas fa-envelope"></i> Correo: consultas.avril@gmail.com</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 Joyería Avril. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botón fijo de WhatsApp -->
+    <a href="https://wa.me/59175833235" class="floating-whatsapp" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script src="static/js/scripts.js"></script>
+</body>
+</html>
