@@ -8,8 +8,8 @@
 // CONFIGURACIÓN
 // ========================
 const CONFIG = {
-    JSON_URL: './data/products_joyeria.json',  // Ruta al JSON de productos
-    IMAGE_BASE_PATH: '/archivos/imagenes/',  // Ruta base de imágenes
+    JSON_URL: 'https://consultasavril-cmd.github.io/joyeria-avril/data/products_joyeria.json',  // Ruta al JSON de productos
+    IMAGE_BASE_PATH: 'archivos/imagenes/',  // Ruta base de imágenes
     WHATSAPP_NUMBER: '59175833235',          // Número de WhatsApp
     PRODUCTS_PER_PAGE: 12,                   // Productos por página
     CATEGORY_NAMES: {
