@@ -144,7 +144,7 @@ body {
 .hero {
     height: 100vh;
     background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-                url('../archivos/NoTocarEstasFotos/fondoPantalla.jpeg');
+                url('archivos/NoTocarEstasFotos/fondoPantalla.jpeg');
     background-size: cover;
     background-position: center center;
     background-attachment: fixed; /* Efecto parallax opcional */
