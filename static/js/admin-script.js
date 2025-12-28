@@ -511,7 +511,7 @@ async function cargarDesdeArchivo() {
     
     try {
         // Intentar cargar desde GitHub
-        const response = await fetch('../data/products_joyeria.json');
+        const response = await fetch('data/products_joyeria.json');
         
         if (!response.ok) {
             throw new Error(`No se pudo cargar el archivo JSON (Error ${response.status})`);
