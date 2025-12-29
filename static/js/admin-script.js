@@ -1,31 +1,16 @@
 // ========================
-// CONFIGURACIÓN
+// CONFIGURACIÓN SIMPLIFICADA - RUTAS RELATIVAS
 // ========================
 const ADMIN_PASSWORD = "avril2024";
 const WHATSAPP_NUMBER = "59175833235";
 
-// FUNCIÓN PARA OBTENER RUTA BASE DINÁMICA
-function getBasePath() {
-    // Si estamos en GitHub Pages
-    if (window.location.hostname.includes('github.io')) {
-        // Obtener la ruta base del proyecto (nombre del repositorio)
-        const pathParts = window.location.pathname.split('/');
-        // GitHub Pages generalmente tiene estructura: /username/reponame/
-        const repoPath = pathParts.slice(0, 2).join('/') + '/';
-        return repoPath;
-    }
-    // Si estamos en desarrollo local
-    return '/';
-}
+// ¡IMPORTANTE! RUTAS RELATIVAS SIN BARRA INICIAL
+const IMAGE_BASE_PATH = "archivos/imagenes/";  // ← Relativa al documento actual
+const JSON_REMOTE_URL = "https://raw.githubusercontent.com/consultasavril-cmd/joyeria-avril/main/data/productos_joyeria.json";
 
-// Configurar la ruta de imágenes dinámicamente
-const BASE_PATH = getBasePath();
-const IMAGE_BASE_PATH = BASE_PATH + "archivos/imagenes/";
-const JSON_REMOTE_URL = BASE_PATH + "data/products_joyeria.json";
-
-console.log("📍 Ruta base detectada:", BASE_PATH);
-console.log("📍 Ruta de imágenes:", IMAGE_BASE_PATH);
-console.log("📍 URL JSON remoto:", JSON_REMOTE_URL);
+console.log("📍 Ruta de imágenes configurada:", IMAGE_BASE_PATH);
+console.log("📍 URL actual:", window.location.href);
+console.log("📍 Pathname:", window.location.pathname);
 
 // ========================
 // SISTEMA DE LOGIN
@@ -71,7 +56,7 @@ async function cargarJSONRemoto() {
         "../data/products_joyeria.json",
         "./data/products_joyeria.json",
         "/data/products_joyeria.json",
-        "https://raw.githubusercontent.com/consultasavril-cmd/joyeria-avril/main/data/productos_joyeria.json"
+        JSON_REMOTE_URL
     ];
     
     let ultimoError = null;
@@ -404,7 +389,7 @@ function mostrarPlaceholderVacio() {
 }
 
 // ========================
-// MOSTRAR PRODUCTOS EN LISTA (VERSIÓN CORREGIDA PARA GITHUB PAGES)
+// MOSTRAR PRODUCTOS EN LISTA (VERSIÓN CORREGIDA - RUTAS RELATIVAS)
 // ========================
 function mostrarProductosEnLista(productos) {
     const productsList = document.getElementById('productsList');
@@ -434,7 +419,7 @@ function mostrarProductosEnLista(productos) {
         
         const categoriaNombre = nombresCategorias[producto.categoria] || producto.categoria;
         
-        // ¡CORRECCIÓN IMPORTANTE PARA GITHUB PAGES!
+        // ¡CORRECCIÓN: RUTAS RELATIVAS!
         let imagenSrc = '';
         if (producto.imagen_local && 
             producto.imagen_local.trim() !== '' && 
@@ -442,8 +427,9 @@ function mostrarProductosEnLista(productos) {
             // Productos locales con imagen_base64
             imagenSrc = producto.imagen_local;
         } else if (producto.imagen && producto.imagen.trim() !== '') {
-            // Productos de GitHub - usar ruta DINÁMICA
+            // Productos de GitHub - usar ruta RELATIVA
             imagenSrc = IMAGE_BASE_PATH + producto.imagen;
+            console.log("📸 Ruta de imagen construida:", imagenSrc);
         } else {
             // Placeholder como último recurso
             imagenSrc = `https://via.placeholder.com/100x100/764ba2/ffffff?text=${encodeURIComponent(producto.nombre.substring(0, 10))}`;
@@ -488,7 +474,7 @@ function mostrarProductosEnLista(productos) {
 }
 
 // ========================
-// ELIMINAR PRODUCTO (VERSIÓN CORREGIDA PARA GITHUB PAGES)
+// ELIMINAR PRODUCTO (VERSIÓN CORREGIDA - RUTAS RELATIVAS)
 // ========================
 function eliminarProducto(id) {
     const productos = obtenerProductosLocales();
@@ -511,12 +497,12 @@ function eliminarProducto(id) {
         console.log("✅ Usando imagen_local (Data URL)");
         crearModal();
     } else if (productoAEliminar.imagen && productoAEliminar.imagen.trim() !== '') {
-        // 2. Productos de GitHub - usar ruta DINÁMICA
+        // 2. Productos de GitHub - usar ruta RELATIVA
         imagenSrc = IMAGE_BASE_PATH + productoAEliminar.imagen;
         origenImagen = 'github';
         
         console.log("📍 Ruta de imagen para producto GitHub:", imagenSrc);
-        console.log("📍 URL completa:", window.location.origin + imagenSrc);
+        console.log("📍 URL completa sería:", window.location.origin + '/' + imagenSrc);
         
         // Llamar inmediatamente al modal - el navegador manejará la carga
         crearModal();
@@ -596,11 +582,11 @@ function eliminarProducto(id) {
         // Verificar si la imagen se cargó
         if (modalImg) {
             modalImg.onload = function() {
-                console.log("✅ Imagen cargada exitosamente en modal");
+                console.log("✅ Imagen cargada exitosamente en modal:", this.src);
             };
             modalImg.onerror = function() {
-                console.error("❌ Error cargando imagen en modal");
-                console.log("💡 Intenta abrir esta URL:", window.location.origin + imagenSrc);
+                console.error("❌ Error cargando imagen en modal:", this.src);
+                console.log("💡 Intenta abrir esta URL:", window.location.origin + '/' + imagenSrc);
             };
         }
         
@@ -1044,7 +1030,4 @@ document.addEventListener('DOMContentLoaded', function() {
             btnLoad.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizar con JSON';
         }
     }, 100);
-    
-    // Debug
-    console.log("📍 URL de GitHub RAW configurada:", JSON_REMOTE_URL);
 });
