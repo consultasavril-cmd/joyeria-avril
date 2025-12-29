@@ -3,17 +3,29 @@
 // ========================
 const ADMIN_PASSWORD = "avril2024";
 const WHATSAPP_NUMBER = "59175833235";
-const IMAGE_BASE_PATH = "/archivos/imagenes/"; // ← USANDO "imagenes"
 
-// DETECTAR RUTA BASE AUTOMÁTICAMENTE
+// FUNCIÓN PARA OBTENER RUTA BASE DINÁMICA
 function getBasePath() {
+    // Si estamos en GitHub Pages
     if (window.location.hostname.includes('github.io')) {
-        return window.location.pathname.split('/').slice(0, -1).join('/') + '/';
+        // Obtener la ruta base del proyecto (nombre del repositorio)
+        const pathParts = window.location.pathname.split('/');
+        // GitHub Pages generalmente tiene estructura: /username/reponame/
+        const repoPath = pathParts.slice(0, 2).join('/') + '/';
+        return repoPath;
     }
+    // Si estamos en desarrollo local
     return '/';
 }
 
-const JSON_REMOTE_URL = "data/products_joyeria.json";
+// Configurar la ruta de imágenes dinámicamente
+const BASE_PATH = getBasePath();
+const IMAGE_BASE_PATH = BASE_PATH + "archivos/imagenes/";
+const JSON_REMOTE_URL = BASE_PATH + "data/products_joyeria.json";
+
+console.log("📍 Ruta base detectada:", BASE_PATH);
+console.log("📍 Ruta de imágenes:", IMAGE_BASE_PATH);
+console.log("📍 URL JSON remoto:", JSON_REMOTE_URL);
 
 // ========================
 // SISTEMA DE LOGIN
@@ -392,7 +404,7 @@ function mostrarPlaceholderVacio() {
 }
 
 // ========================
-// MOSTRAR PRODUCTOS EN LISTA (VERSIÓN CORREGIDA)
+// MOSTRAR PRODUCTOS EN LISTA (VERSIÓN CORREGIDA PARA GITHUB PAGES)
 // ========================
 function mostrarProductosEnLista(productos) {
     const productsList = document.getElementById('productsList');
@@ -422,7 +434,7 @@ function mostrarProductosEnLista(productos) {
         
         const categoriaNombre = nombresCategorias[producto.categoria] || producto.categoria;
         
-        // ¡CORRECCIÓN AQUÍ! Misma lógica que el modal
+        // ¡CORRECCIÓN IMPORTANTE PARA GITHUB PAGES!
         let imagenSrc = '';
         if (producto.imagen_local && 
             producto.imagen_local.trim() !== '' && 
@@ -430,8 +442,8 @@ function mostrarProductosEnLista(productos) {
             // Productos locales con imagen_base64
             imagenSrc = producto.imagen_local;
         } else if (producto.imagen && producto.imagen.trim() !== '') {
-            // Productos de GitHub - usar ruta relativa
-            imagenSrc = "/archivos/imagenes/" + producto.imagen;
+            // Productos de GitHub - usar ruta DINÁMICA
+            imagenSrc = IMAGE_BASE_PATH + producto.imagen;
         } else {
             // Placeholder como último recurso
             imagenSrc = `https://via.placeholder.com/100x100/764ba2/ffffff?text=${encodeURIComponent(producto.nombre.substring(0, 10))}`;
@@ -474,8 +486,9 @@ function mostrarProductosEnLista(productos) {
     
     productsList.innerHTML = html;
 }
+
 // ========================
-// ELIMINAR PRODUCTO (VERSIÓN CORREGIDA - cargando imágenes correctamente)
+// ELIMINAR PRODUCTO (VERSIÓN CORREGIDA PARA GITHUB PAGES)
 // ========================
 function eliminarProducto(id) {
     const productos = obtenerProductosLocales();
@@ -498,8 +511,8 @@ function eliminarProducto(id) {
         console.log("✅ Usando imagen_local (Data URL)");
         crearModal();
     } else if (productoAEliminar.imagen && productoAEliminar.imagen.trim() !== '') {
-        // 2. Productos de GitHub - usar ruta relativa directa
-        imagenSrc = "/archivos/imagenes/" + productoAEliminar.imagen;
+        // 2. Productos de GitHub - usar ruta DINÁMICA
+        imagenSrc = IMAGE_BASE_PATH + productoAEliminar.imagen;
         origenImagen = 'github';
         
         console.log("📍 Ruta de imagen para producto GitHub:", imagenSrc);
@@ -536,7 +549,7 @@ function eliminarProducto(id) {
                                      style="background: #f0f0f0; border: 2px solid #764ba2;"
                                      onerror="this.onerror=null; this.src='https://via.placeholder.com/200x200/764ba2/ffffff?text=Error+cargando'">
                                 ${origenImagen === 'github' ? 
-                                    '<div class="image-note" style="color: black;><small><i class="fas fa-cloud"></i> Imagen desde archivos/imagenes/</small></div>' : 
+                                    '<div class="image-note" style="color: black; margin-top: 5px;"><small><i class="fas fa-cloud"></i> Imagen desde: ' + IMAGE_BASE_PATH + '</small></div>' : 
                                     ''}
                                 ${origenImagen === 'placeholder' ? 
                                     '<div class="image-note"><small><i class="fas fa-exclamation-circle"></i> Usando placeholder</small></div>' : 
@@ -622,6 +635,7 @@ function eliminarProducto(id) {
         setTimeout(() => { if (btnCancel) btnCancel.focus(); }, 100);
     }
 }
+
 // ========================
 // LIMPIAR TODO (MEJORADO CON MODAL)
 // ========================
