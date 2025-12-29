@@ -1069,3 +1069,50 @@ input.success {
     border-color: #27ae60 !important;
     background-color: #e9f7ef !important;
 }
+/* ===== ESTILOS PARA PRODUCTOS LOCALES ===== */
+.local-badge {
+    background: #f39c12;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7em;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.local-warning {
+    color: #e74c3c;
+    margin-top: 5px;
+    padding: 5px;
+    background: #ffeaea;
+    border-radius: 3px;
+    border-left: 3px solid #e74c3c;
+    font-size: 12px;
+}
+
+.local-warning i {
+    margin-right: 5px;
+}
+
+.sync-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 10px;
+    transition: background 0.3s;
+}
+
+.sync-btn:hover {
+    background: #138496;
+}
+
+.warning-icon {
+    color: #f39c12;
+}
