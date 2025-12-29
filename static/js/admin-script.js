@@ -3,20 +3,17 @@
 // ========================
 const ADMIN_PASSWORD = "avril2024";
 const WHATSAPP_NUMBER = "59175833235";
-const IMAGE_BASE_PATH = "/archivos/imagenes/";
+const IMAGE_BASE_PATH = "/archivos/imagenes/"; // ← USANDO "imagenes"
 
 // DETECTAR RUTA BASE AUTOMÁTICAMENTE
 function getBasePath() {
-    // Si estamos en GitHub Pages
     if (window.location.hostname.includes('github.io')) {
         return window.location.pathname.split('/').slice(0, -1).join('/') + '/';
     }
-    // Si estamos en local
     return '/';
 }
 
-// Usar ruta relativa desde la ubicación actual del script
-const JSON_REMOTE_URL = "data/products_joyeria.json"; // Ruta relativa desde admin.html
+const JSON_REMOTE_URL = "data/products_joyeria.json";
 
 // ========================
 // SISTEMA DE LOGIN
@@ -37,28 +34,17 @@ function verificarPassword() {
     }
 }
 
-// Verificar si ya está autenticado
-document.addEventListener('DOMContentLoaded', () => {
-    if (sessionStorage.getItem('admin_authenticated') === 'true') {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'block';
-        inicializarPanel();
-    }
-});
-
 // ========================
 // INICIALIZAR PANEL
 // ========================
 async function inicializarPanel() {
     try {
         console.log("🔄 Inicializando panel admin...");
-        // Intentar cargar desde JSON remoto
         const productos = await cargarJSONRemoto();
         console.log("✅ Panel inicializado con", productos.length, "productos");
         configurarFormulario();
     } catch (error) {
         console.log("ℹ️ Trabajando solo con datos locales:", error.message);
-        // Si falla, cargar solo locales
         cargarProductosLocales();
         configurarFormulario();
     }
@@ -68,13 +54,12 @@ async function inicializarPanel() {
 // CARGAR JSON REMOTO - VERSIÓN MEJORADA
 // ========================
 async function cargarJSONRemoto() {
-    // Probar múltiples rutas posibles
     const rutasPosibles = [
-        "data/products_joyeria.json",           // Desde admin.html
-        "../data/products_joyeria.json",        // Desde static/js/
-        "./data/products_joyeria.json",         // Ruta relativa
-        "/data/products_joyeria.json",          // Ruta absoluta
-        "https://raw.githubusercontent.com/consultasavril-cmd/joyeria-avril/main/data/productos_joyeria.json" // URL directa GitHub
+        "data/products_joyeria.json",
+        "../data/products_joyeria.json",
+        "./data/products_joyeria.json",
+        "/data/products_joyeria.json",
+        "https://raw.githubusercontent.com/consultasavril-cmd/joyeria-avril/main/data/productos_joyeria.json"
     ];
     
     let ultimoError = null;
@@ -82,31 +67,22 @@ async function cargarJSONRemoto() {
     for (const ruta of rutasPosibles) {
         try {
             console.log("📡 Probando ruta:", ruta);
-            
             const response = await fetch(ruta + '?nocache=' + new Date().getTime());
-            
-            console.log("📊 Respuesta HTTP para", ruta + ":", response.status, response.statusText);
+            console.log("📊 Respuesta HTTP:", response.status, response.statusText);
             
             if (response.ok) {
                 const productosRemotos = await response.json();
-                
                 if (!Array.isArray(productosRemotos)) {
                     throw new Error("El JSON no contiene un array válido");
                 }
                 
                 console.log(`✅ ${productosRemotos.length} producto(s) cargados desde: ${ruta}`);
-                
-                // Obtener productos locales actuales
                 const productosLocales = obtenerProductosLocales();
-                
-                // Combinar productos
                 const productosCombinados = combinarProductos(productosRemotos, productosLocales);
                 
-                // Guardar combinación
                 guardarProductosLocales(productosCombinados);
                 mostrarProductosEnLista(productosCombinados);
                 
-                // Mostrar mensaje
                 mostrarMensaje(
                     `✅ <strong>${productosCombinados.length} productos cargados</strong><br><br>` +
                     `• ${productosRemotos.length} desde el archivo JSON<br>` +
@@ -119,14 +95,12 @@ async function cargarJSONRemoto() {
             } else if (response.status !== 404) {
                 throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
             }
-            
         } catch (error) {
             console.log(`❌ Error con ruta ${ruta}:`, error.message);
             ultimoError = error;
         }
     }
     
-    // Si ninguna ruta funcionó
     console.warn("⚠️ Ninguna ruta funcionó, usando datos locales");
     mostrarMensaje(
         "📝 <strong>No se pudo cargar el archivo JSON</strong><br><br>" +
@@ -147,25 +121,20 @@ async function cargarJSONRemoto() {
 // COMBINAR PRODUCTOS
 // ========================
 function combinarProductos(productosRemotos, productosLocales) {
-    // Usar un Map para evitar duplicados por ID
     const productosMap = new Map();
     
-    // Primero agregar productos remotos
     productosRemotos.forEach(remoto => {
         productosMap.set(remoto.id, {
             ...remoto,
-            imagen_local: '' // No tenemos la imagen localmente
+            imagen_local: ''
         });
     });
     
-    // Luego agregar productos locales (sobrescriben si mismo ID)
     productosLocales.forEach(local => {
         productosMap.set(local.id, local);
     });
     
-    // Convertir a array y ordenar por ID
-    return Array.from(productosMap.values())
-        .sort((a, b) => a.id - b.id);
+    return Array.from(productosMap.values()).sort((a, b) => a.id - b.id);
 }
 
 // ========================
@@ -194,7 +163,6 @@ function cargarProductosLocales() {
 // ========================
 function configurarFormulario() {
     const form = document.getElementById('productForm');
-    
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         agregarProducto();
@@ -351,7 +319,6 @@ async function agregarProducto() {
     const nombreArchivoOriginal = imagenFile.name;
     const nombreArchivoUnico = generarNombreArchivoUnico(nombreArchivoOriginal, productos);
     
-    // Convertir imagen a Base64 para vista previa local
     let imagenPreview = '';
     try {
         imagenPreview = await convertirArchivoABase64(imagenFile);
@@ -360,7 +327,6 @@ async function agregarProducto() {
         return;
     }
     
-    // Generar nuevo ID (buscar máximo actual + 1)
     const maxId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) : 0;
     const nuevoId = maxId + 1;
     
@@ -379,7 +345,6 @@ async function agregarProducto() {
     guardarProductosLocales(productos);
     mostrarProductosEnLista(productos);
     
-    // Limpiar formulario
     document.getElementById('productForm').reset();
     document.getElementById('descCounter').textContent = '0';
     document.getElementById('descCounter').style.color = '#7f8c8d';
@@ -427,7 +392,7 @@ function mostrarPlaceholderVacio() {
 }
 
 // ========================
-// MOSTRAR PRODUCTOS EN LISTA
+// MOSTRAR PRODUCTOS EN LISTA (VERSIÓN CORREGIDA)
 // ========================
 function mostrarProductosEnLista(productos) {
     const productsList = document.getElementById('productsList');
@@ -456,10 +421,22 @@ function mostrarProductosEnLista(productos) {
         };
         
         const categoriaNombre = nombresCategorias[producto.categoria] || producto.categoria;
-        const imagenSrc = producto.imagen_local || 
-                         `https://via.placeholder.com/100x100/764ba2/ffffff?text=${encodeURIComponent(producto.nombre.substring(0, 10))}`;
         
-        // Determinar si el producto es solo local (tiene imagen_local)
+        // ¡CORRECCIÓN AQUÍ! Misma lógica que el modal
+        let imagenSrc = '';
+        if (producto.imagen_local && 
+            producto.imagen_local.trim() !== '' && 
+            producto.imagen_local.startsWith('data:image')) {
+            // Productos locales con imagen_base64
+            imagenSrc = producto.imagen_local;
+        } else if (producto.imagen && producto.imagen.trim() !== '') {
+            // Productos de GitHub - usar ruta relativa
+            imagenSrc = "/archivos/imagenes/" + producto.imagen;
+        } else {
+            // Placeholder como último recurso
+            imagenSrc = `https://via.placeholder.com/100x100/764ba2/ffffff?text=${encodeURIComponent(producto.nombre.substring(0, 10))}`;
+        }
+        
         const esSoloLocal = producto.imagen_local ? true : false;
         
         html += `
@@ -472,14 +449,16 @@ function mostrarProductosEnLista(productos) {
                 
                 <div class="product-body">
                     <div class="product-image">
-                        <img src="${imagenSrc}" alt="${producto.nombre}">
+                        <img src="${imagenSrc}" 
+                             alt="${producto.nombre}"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/100x100/764ba2/ffffff?text=Error'">
                     </div>
                     
                     <div class="product-info">
                         <p><strong>Categoría:</strong> ${categoriaNombre}</p>
                         <p><strong>Descripción:</strong> ${producto.descripcion.substring(0, 100)}${producto.descripcion.length > 100 ? '...' : ''}</p>
                         <p><strong>Archivo:</strong> <code>${producto.imagen}</code></p>
-                        <p><strong>Ruta final:</strong> <small>${IMAGE_BASE_PATH}${producto.imagen}</small></p>
+                        <p><strong>Ruta final:</strong> <small>${producto.imagen ? IMAGE_BASE_PATH + producto.imagen : 'Sin imagen'}</small></p>
                         ${esSoloLocal ? '<p class="local-warning"><small><i class="fas fa-exclamation-triangle"></i> Solo existe localmente</small></p>' : ''}
                     </div>
                 </div>
@@ -495,40 +474,254 @@ function mostrarProductosEnLista(productos) {
     
     productsList.innerHTML = html;
 }
-
 // ========================
-// ELIMINAR PRODUCTOS
+// ELIMINAR PRODUCTO (VERSIÓN CORREGIDA - cargando imágenes correctamente)
 // ========================
 function eliminarProducto(id) {
-    if (!confirm('¿Estás seguro de eliminar este producto?\n\n⚠️ IMPORTANTE: Esto solo lo eliminará localmente. Para eliminarlo completamente, también debes actualizar el archivo JSON en GitHub.')) return;
-    
     const productos = obtenerProductosLocales();
-    const nuevosProductos = productos.filter(p => p.id !== id);
+    const productoAEliminar = productos.find(p => p.id === id);
     
-    guardarProductosLocales(nuevosProductos);
-    mostrarProductosEnLista(nuevosProductos);
+    if (!productoAEliminar) return;
     
-    mostrarMensaje(
-        '✅ Producto eliminado localmente.<br><br>' +
-        '<strong>Recuerda:</strong> Para eliminarlo completamente:<br>' +
-        '1. Exporta el JSON actualizado<br>' +
-        '2. Súbelo a GitHub reemplazando el archivo existente',
-        'success'
-    );
+    console.log("🔍 PRODUCTO A ELIMINAR:", productoAEliminar);
+    
+    // Determinar qué imagen mostrar
+    let imagenSrc = '';
+    let origenImagen = 'local';
+    
+    if (productoAEliminar.imagen_local && 
+        productoAEliminar.imagen_local.trim() !== '' && 
+        productoAEliminar.imagen_local.startsWith('data:image')) {
+        // 1. Tiene imagen_local válida (productos agregados localmente)
+        imagenSrc = productoAEliminar.imagen_local;
+        origenImagen = 'local';
+        console.log("✅ Usando imagen_local (Data URL)");
+        crearModal();
+    } else if (productoAEliminar.imagen && productoAEliminar.imagen.trim() !== '') {
+        // 2. Productos de GitHub - usar ruta relativa directa
+        imagenSrc = "/archivos/imagenes/" + productoAEliminar.imagen;
+        origenImagen = 'github';
+        
+        console.log("📍 Ruta de imagen para producto GitHub:", imagenSrc);
+        console.log("📍 URL completa:", window.location.origin + imagenSrc);
+        
+        // Llamar inmediatamente al modal - el navegador manejará la carga
+        crearModal();
+    } else {
+        // 3. Sin imagen disponible
+        const nombreCorto = productoAEliminar.nombre.substring(0, 15);
+        imagenSrc = `https://via.placeholder.com/200x200/764ba2/ffffff?text=${encodeURIComponent(nombreCorto)}`;
+        origenImagen = 'placeholder';
+        console.log("🎨 Usando placeholder genérico");
+        crearModal();
+    }
+    
+    function crearModal() {
+        console.log("🖼️ Creando modal con imagen:", imagenSrc);
+        
+        const modalHTML = `
+            <div class="confirm-modal-overlay">
+                <div class="confirm-modal">
+                    <div class="confirm-header">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>¿Eliminar este producto?</h3>
+                    </div>
+                    
+                    <div class="confirm-body">
+                        <div class="product-preview">
+                            <div class="product-image-large">
+                                <img src="${imagenSrc}" 
+                                     alt="${productoAEliminar.nombre}"
+                                     class="preview-delete"
+                                     style="background: #f0f0f0; border: 2px solid #764ba2;"
+                                     onerror="this.onerror=null; this.src='https://via.placeholder.com/200x200/764ba2/ffffff?text=Error+cargando'">
+                                ${origenImagen === 'github' ? 
+                                    '<div class="image-note" style="color: black;><small><i class="fas fa-cloud"></i> Imagen desde archivos/imagenes/</small></div>' : 
+                                    ''}
+                                ${origenImagen === 'placeholder' ? 
+                                    '<div class="image-note"><small><i class="fas fa-exclamation-circle"></i> Usando placeholder</small></div>' : 
+                                    ''}
+                            </div>
+                            <div class="product-details">
+                                <h4>${productoAEliminar.nombre}</h4>
+                                <p><strong>Categoría:</strong> ${productoAEliminar.categoria}</p>
+                                <p><strong>Descripción:</strong> ${productoAEliminar.descripcion.substring(0, 80)}${productoAEliminar.descripcion.length > 80 ? '...' : ''}</p>
+                                <p><strong>Archivo:</strong> <code>${productoAEliminar.imagen || 'Sin archivo'}</code></p>
+                                <p><strong>Ruta usada:</strong> <small>${imagenSrc}</small></p>
+                                <p><strong>Fecha:</strong> ${productoAEliminar.fecha}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="confirm-warning">
+                            <i class="fas fa-info-circle"></i>
+                            <p><strong>IMPORTANTE:</strong> Esto solo eliminará localmente. Para eliminarlo completamente, exporta el JSON actualizado y súbelo a GitHub.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="confirm-actions">
+                        <button class="confirm-cancel">Cancelar</button>
+                        <button class="confirm-delete">
+                            <i class="fas fa-trash"></i> Eliminar Producto
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Agregar modal al DOM
+        const modalContainer = document.createElement('div');
+        modalContainer.id = 'confirmDeleteModal';
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+        
+        // Configurar eventos
+        const overlay = modalContainer.querySelector('.confirm-modal-overlay');
+        const btnCancel = modalContainer.querySelector('.confirm-cancel');
+        const btnDelete = modalContainer.querySelector('.confirm-delete');
+        const modalImg = modalContainer.querySelector('img.preview-delete');
+        
+        // Verificar si la imagen se cargó
+        if (modalImg) {
+            modalImg.onload = function() {
+                console.log("✅ Imagen cargada exitosamente en modal");
+            };
+            modalImg.onerror = function() {
+                console.error("❌ Error cargando imagen en modal");
+                console.log("💡 Intenta abrir esta URL:", window.location.origin + imagenSrc);
+            };
+        }
+        
+        function cerrarModal() {
+            if (modalContainer && modalContainer.parentNode) {
+                modalContainer.parentNode.removeChild(modalContainer);
+            }
+        }
+        
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) cerrarModal();
+        });
+        
+        btnCancel.addEventListener('click', cerrarModal);
+        
+        btnDelete.addEventListener('click', function() {
+            const nuevosProductos = productos.filter(p => p.id !== id);
+            guardarProductosLocales(nuevosProductos);
+            mostrarProductosEnLista(nuevosProductos);
+            cerrarModal();
+            
+            mostrarMensaje(
+                `✅ Producto eliminado localmente.<br><br>
+                <strong>"${productoAEliminar.nombre}"</strong><br><br>
+                <strong>Recuerda:</strong> Para eliminarlo completamente:<br>
+                1. Exporta el JSON actualizado<br>
+                2. Súbelo a GitHub reemplazando el archivo existente`,
+                'success'
+            );
+        });
+        
+        setTimeout(() => { if (btnCancel) btnCancel.focus(); }, 100);
+    }
 }
-
+// ========================
+// LIMPIAR TODO (MEJORADO CON MODAL)
+// ========================
 function limpiarTodo() {
-    if (!confirm('⚠️ ¿Estás seguro de eliminar TODOS los productos LOCALMENTE?\n\nEsto no afectará el archivo JSON en GitHub hasta que lo reemplace.')) return;
+    const productos = obtenerProductosLocales();
     
-    localStorage.removeItem('productos_joyeria_avril');
-    cargarProductosLocales();
+    if (productos.length === 0) {
+        mostrarMensaje('ℹ️ No hay productos para eliminar', 'info');
+        return;
+    }
     
-    mostrarMensaje(
-        '✅ Todos los productos locales han sido eliminados.<br><br>' +
-        '<strong>Recuerda:</strong> Los productos aún existen en GitHub.<br>' +
-        'Para actualizar la tienda, sube un JSON vacío.',
-        'success'
-    );
+    // Crear modal de confirmación
+    const modalHTML = `
+        <div class="confirm-modal-overlay">
+            <div class="confirm-modal">
+                <div class="confirm-header" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                    <i class="fas fa-radiation"></i>
+                    <h3>¿Eliminar TODOS los productos?</h3>
+                </div>
+                
+                <div class="confirm-body">
+                    <div style="background: #fff8e1; border: 2px solid #ffd54f; border-radius: 8px; padding: 15px; display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
+                        <i class="fas fa-exclamation-circle" style="color: #f39c12; font-size: 24px;"></i>
+                        <div>
+                            <p style="margin: 0; font-weight: bold; color: #795548;">Estás a punto de eliminar ${productos.length} productos</p>
+                            <p style="margin: 5px 0 0 0; color: #795548;">Esta acción no se puede deshacer.</p>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #333;">Resumen por categoría:</h4>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            ${Object.entries(
+                                productos.reduce((acc, p) => {
+                                    acc[p.categoria] = (acc[p.categoria] || 0) + 1;
+                                    return acc;
+                                }, {})
+                            ).map(([cat, count]) => 
+                                `<li style="margin-bottom: 5px; color: #555;"><strong>${cat}:</strong> ${count} producto(s)</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="confirm-warning">
+                        <i class="fas fa-info-circle"></i>
+                        <p><strong>IMPORTANTE:</strong> Esto solo eliminará localmente. Los productos seguirán en GitHub hasta que subas un JSON vacío.</p>
+                    </div>
+                </div>
+                
+                <div class="confirm-actions">
+                    <button class="confirm-cancel">Cancelar</button>
+                    <button class="confirm-delete" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                        <i class="fas fa-broom"></i> Limpiar Todo (${productos.length} productos)
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Agregar modal al DOM
+    const modalContainer = document.createElement('div');
+    modalContainer.id = 'confirmClearAllModal';
+    modalContainer.innerHTML = modalHTML;
+    document.body.appendChild(modalContainer);
+    
+    // Configurar eventos
+    const overlay = modalContainer.querySelector('.confirm-modal-overlay');
+    const btnCancel = modalContainer.querySelector('.confirm-cancel');
+    const btnDelete = modalContainer.querySelector('.confirm-delete');
+    
+    // Función para cerrar modal
+    function cerrarModal() {
+        modalContainer.remove();
+    }
+    
+    // Eventos
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            cerrarModal();
+        }
+    });
+    
+    btnCancel.addEventListener('click', cerrarModal);
+    
+    btnDelete.addEventListener('click', function() {
+        localStorage.removeItem('productos_joyeria_avril');
+        cargarProductosLocales();
+        
+        cerrarModal();
+        
+        mostrarMensaje(
+            '✅ Todos los productos locales han sido eliminados.<br><br>' +
+            '<strong>Recuerda:</strong> Los productos aún existen en GitHub.<br>' +
+            'Para actualizar la tienda, sube un JSON vacío.',
+            'success'
+        );
+    });
+    
+    // Enfocar en botón cancelar por seguridad
+    btnCancel.focus();
 }
 
 // ========================
@@ -544,7 +737,6 @@ function exportarJSON() {
     
     // Preparar productos para exportar (sin imagen_local)
     const productosParaExportar = productos.map(producto => {
-        // Crear copia sin imagen_local
         const { imagen_local, ...productoParaExportar } = producto;
         return productoParaExportar;
     });
@@ -649,7 +841,6 @@ function mostrarMensaje(texto, tipo = 'info', autoCerrar = null) {
     modalMessage.innerHTML = texto;
     modal.style.display = 'flex';
     
-    // Auto-cierre opcional
     if (autoCerrar) {
         setTimeout(() => {
             if (modal.style.display === 'flex') {
@@ -664,70 +855,6 @@ function cerrarModal() {
 }
 
 // ========================
-// DEBUG: Verificar rutas
-// ========================
-document.addEventListener('DOMContentLoaded', function() {
-    // Agregar estilos para el badge local
-    const estilos = document.createElement('style');
-    estilos.textContent = `
-        .local-badge {
-            background: #f39c12;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.7em;
-            margin-left: 5px;
-            vertical-align: middle;
-        }
-        
-        .local-warning {
-            color: #e74c3c;
-            margin-top: 5px;
-            padding: 5px;
-            background: #ffeaea;
-            border-radius: 3px;
-            border-left: 3px solid #e74c3c;
-            font-size: 12px;
-        }
-        
-        .local-warning i {
-            margin-right: 5px;
-        }
-        
-        .sync-btn {
-            background: #17a2b8;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-left: 10px;
-            transition: background 0.3s;
-        }
-        
-        .sync-btn:hover {
-            background: #138496;
-        }
-    `;
-    document.head.appendChild(estilos);
-    
-    // Debug: mostrar información de ruta
-    console.log("📍 Ubicación actual:", window.location.href);
-    console.log("📁 Ruta del script:", document.currentScript ? document.currentScript.src : "N/A");
-    
-    // Cambiar botón a sync
-    setTimeout(() => {
-        const btnLoad = document.querySelector('.btn-load');
-        if (btnLoad) {
-            btnLoad.classList.add('sync-btn');
-            btnLoad.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizar con JSON';
-        }
-    }, 100);
-});// ========================
 // CONFIGURACIÓN DE INTERFAZ
 // ========================
 
@@ -828,3 +955,82 @@ function mostrarVistaPreviaArchivo(file) {
     reader.readAsDataURL(file);
 }
 
+// ========================
+// INICIALIZAR TODO CUANDO EL DOM ESTÉ LISTO
+// ========================
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar autenticación
+    if (sessionStorage.getItem('admin_authenticated') === 'true') {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        inicializarPanel();
+    }
+    
+    // Configurar interfaz
+    configurarContadorCaracteres();
+    configurarSubidaArchivos();
+    
+    // Agregar estilos dinámicos
+    const estilos = document.createElement('style');
+    estilos.textContent = `
+        .local-badge {
+            background: #f39c12;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+        
+        .local-warning {
+            color: #e74c3c;
+            margin-top: 5px;
+            padding: 5px;
+            background: #ffeaea;
+            border-radius: 3px;
+            border-left: 3px solid #e74c3c;
+            font-size: 12px;
+        }
+        
+        .local-warning i {
+            margin-right: 5px;
+        }
+        
+        .sync-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 10px;
+            transition: background 0.3s;
+        }
+        
+        .sync-btn:hover {
+            background: #138496;
+        }
+        
+        .warning-icon {
+            color: #f39c12;
+        }
+    `;
+    document.head.appendChild(estilos);
+    
+    // Cambiar botón a sync
+    setTimeout(() => {
+        const btnLoad = document.querySelector('.btn-load');
+        if (btnLoad) {
+            btnLoad.classList.add('sync-btn');
+            btnLoad.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizar con JSON';
+        }
+    }, 100);
+    
+    // Debug
+    console.log("📍 URL de GitHub RAW configurada:", JSON_REMOTE_URL);
+});
