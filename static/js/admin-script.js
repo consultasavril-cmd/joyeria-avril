@@ -3,7 +3,7 @@
 // ========================
 const ADMIN_PASSWORD = "avril2024";
 const WHATSAPP_NUMBER = "59175833235";
-const IMAGE_BASE_PATH = "/archivos/imagenes/"; // ← USANDO "imagenes"
+const IMAGE_BASE_PATH = "archivos/imagenes/"; // ← USANDO "imagenes"
 
 // DETECTAR RUTA BASE AUTOMÁTICAMENTE
 function getBasePath() {
