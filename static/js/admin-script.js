@@ -3,7 +3,20 @@
 // ========================
 const ADMIN_PASSWORD = "avril2024";
 const WHATSAPP_NUMBER = "59175833235";
-const IMAGE_BASE_PATH = "/archivos/imagenes/"; // Ruta donde estarán las imágenes en GitHub
+const IMAGE_BASE_PATH = "/archivos/imagenes/";
+
+// DETECTAR RUTA BASE AUTOMÁTICAMENTE
+function getBasePath() {
+    // Si estamos en GitHub Pages
+    if (window.location.hostname.includes('github.io')) {
+        return window.location.pathname.split('/').slice(0, -1).join('/') + '/';
+    }
+    // Si estamos en local
+    return '/';
+}
+
+// Usar ruta relativa desde la ubicación actual del script
+const JSON_REMOTE_URL = "data/products_joyeria.json"; // Ruta relativa desde admin.html
 
 // ========================
 // SISTEMA DE LOGIN
@@ -36,13 +49,127 @@ document.addEventListener('DOMContentLoaded', () => {
 // ========================
 // INICIALIZAR PANEL
 // ========================
-function inicializarPanel() {
-    cargarProductosLocales();
-    configurarFormulario();
+async function inicializarPanel() {
+    try {
+        console.log("🔄 Inicializando panel admin...");
+        // Intentar cargar desde JSON remoto
+        const productos = await cargarJSONRemoto();
+        console.log("✅ Panel inicializado con", productos.length, "productos");
+        configurarFormulario();
+    } catch (error) {
+        console.log("ℹ️ Trabajando solo con datos locales:", error.message);
+        // Si falla, cargar solo locales
+        cargarProductosLocales();
+        configurarFormulario();
+    }
 }
 
 // ========================
-// GESTIÓN DE PRODUCTOS (LOCAL)
+// CARGAR JSON REMOTO - VERSIÓN MEJORADA
+// ========================
+async function cargarJSONRemoto() {
+    // Probar múltiples rutas posibles
+    const rutasPosibles = [
+        "data/products_joyeria.json",           // Desde admin.html
+        "../data/products_joyeria.json",        // Desde static/js/
+        "./data/products_joyeria.json",         // Ruta relativa
+        "/data/products_joyeria.json",          // Ruta absoluta
+        "https://raw.githubusercontent.com/consultasavril-cmd/joyeria-avril/main/data/productos_joyeria.json" // URL directa GitHub
+    ];
+    
+    let ultimoError = null;
+    
+    for (const ruta of rutasPosibles) {
+        try {
+            console.log("📡 Probando ruta:", ruta);
+            
+            const response = await fetch(ruta + '?nocache=' + new Date().getTime());
+            
+            console.log("📊 Respuesta HTTP para", ruta + ":", response.status, response.statusText);
+            
+            if (response.ok) {
+                const productosRemotos = await response.json();
+                
+                if (!Array.isArray(productosRemotos)) {
+                    throw new Error("El JSON no contiene un array válido");
+                }
+                
+                console.log(`✅ ${productosRemotos.length} producto(s) cargados desde: ${ruta}`);
+                
+                // Obtener productos locales actuales
+                const productosLocales = obtenerProductosLocales();
+                
+                // Combinar productos
+                const productosCombinados = combinarProductos(productosRemotos, productosLocales);
+                
+                // Guardar combinación
+                guardarProductosLocales(productosCombinados);
+                mostrarProductosEnLista(productosCombinados);
+                
+                // Mostrar mensaje
+                mostrarMensaje(
+                    `✅ <strong>${productosCombinados.length} productos cargados</strong><br><br>` +
+                    `• ${productosRemotos.length} desde el archivo JSON<br>` +
+                    `• ${productosLocales.length} locales`,
+                    'success',
+                    5000
+                );
+                
+                return productosCombinados;
+            } else if (response.status !== 404) {
+                throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+            }
+            
+        } catch (error) {
+            console.log(`❌ Error con ruta ${ruta}:`, error.message);
+            ultimoError = error;
+        }
+    }
+    
+    // Si ninguna ruta funcionó
+    console.warn("⚠️ Ninguna ruta funcionó, usando datos locales");
+    mostrarMensaje(
+        "📝 <strong>No se pudo cargar el archivo JSON</strong><br><br>" +
+        "Probé las siguientes rutas:<br>" +
+        rutasPosibles.map(r => `<code>${r}</code>`).join('<br>') +
+        "<br><br><strong>Posibles soluciones:</strong><br>" +
+        "1. Verifica que el archivo existe en <code>data/products_joyeria.json</code><br>" +
+        "2. Usa la consola (F12) para ver errores detallados<br>" +
+        "3. Agrega productos manualmente y expórtalos",
+        'info',
+        10000
+    );
+    
+    throw ultimoError || new Error("No se pudo cargar el JSON desde ninguna ruta");
+}
+
+// ========================
+// COMBINAR PRODUCTOS
+// ========================
+function combinarProductos(productosRemotos, productosLocales) {
+    // Usar un Map para evitar duplicados por ID
+    const productosMap = new Map();
+    
+    // Primero agregar productos remotos
+    productosRemotos.forEach(remoto => {
+        productosMap.set(remoto.id, {
+            ...remoto,
+            imagen_local: '' // No tenemos la imagen localmente
+        });
+    });
+    
+    // Luego agregar productos locales (sobrescriben si mismo ID)
+    productosLocales.forEach(local => {
+        productosMap.set(local.id, local);
+    });
+    
+    // Convertir a array y ordenar por ID
+    return Array.from(productosMap.values())
+        .sort((a, b) => a.id - b.id);
+}
+
+// ========================
+// GESTIÓN DE PRODUCTOS (LOCAL - TEMPORAL)
 // ========================
 function obtenerProductosLocales() {
     const productosJSON = localStorage.getItem('productos_joyeria_avril');
@@ -52,12 +179,14 @@ function obtenerProductosLocales() {
 function guardarProductosLocales(productos) {
     localStorage.setItem('productos_joyeria_avril', JSON.stringify(productos));
     actualizarContadores(productos.length);
+    return productos;
 }
 
 function cargarProductosLocales() {
     const productos = obtenerProductosLocales();
     actualizarContadores(productos.length);
     mostrarProductosEnLista(productos);
+    return productos;
 }
 
 // ========================
@@ -71,7 +200,6 @@ function configurarFormulario() {
         agregarProducto();
     });
     
-    // Verificar nombre duplicado en tiempo real
     const nombreInput = document.getElementById('productName');
     nombreInput.addEventListener('input', verificarNombreDuplicado);
 }
@@ -93,8 +221,6 @@ function verificarNombreDuplicado() {
     if (nombreDuplicado) {
         nombreInput.style.borderColor = '#e74c3c';
         nombreInput.style.backgroundColor = '#ffeaea';
-        
-        // Mostrar sugerencia de nombres similares
         mostrarSugerenciasNombres(nombre, productos);
     } else {
         nombreInput.style.borderColor = '#ddd';
@@ -106,14 +232,13 @@ function verificarNombreDuplicado() {
 function mostrarSugerenciasNombres(nombre, productos) {
     ocultarSugerencias();
     
-    // Buscar nombres similares
     const nombresSimilares = productos
         .filter(producto => 
             producto.nombre.toLowerCase().includes(nombre.toLowerCase()) ||
             nombre.toLowerCase().includes(producto.nombre.toLowerCase())
         )
         .map(producto => producto.nombre)
-        .slice(0, 3); // Mostrar máximo 3 sugerencias
+        .slice(0, 3);
     
     if (nombresSimilares.length === 0) return;
     
@@ -145,48 +270,26 @@ function ocultarSugerencias() {
 }
 
 // ========================
-// VERIFICAR IMAGEN DUPLICADA (por nombre de archivo)
-// ========================
-async function verificarImagenDuplicada(nombreArchivo, productos) {
-    // Verificar si ya existe un producto con el mismo nombre de archivo
-    for (const producto of productos) {
-        if (producto.imagen === nombreArchivo) {
-            return {
-                duplicado: true,
-                producto: producto,
-                tipo: 'archivo_duplicado'
-            };
-        }
-    }
-    
-    return { duplicado: false };
-}
-
-// ========================
-// GENERAR NOMBRE DE ARCHIVO ÚNICO (MANTIENE NOMBRE ORIGINAL)
+// GENERAR NOMBRE DE ARCHIVO ÚNICO
 // ========================
 function generarNombreArchivoUnico(nombreOriginal, productos) {
-    // Obtener nombre base y extensión
     const partes = nombreOriginal.split('.');
     let nombreBase = partes.slice(0, -1).join('.');
     let extension = partes[partes.length - 1].toLowerCase();
     
-    // Limpiar nombre base (opcional, para quitar caracteres problemáticos)
     nombreBase = nombreBase
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remover acentos
-        .replace(/[^\w\s.-]/gi, '') // Remover caracteres especiales excepto puntos y guiones
-        .replace(/\s+/g, '-'); // Reemplazar espacios con guiones
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w\s.-]/gi, '')
+        .replace(/\s+/g, '-');
     
-    // Verificar extensiones válidas
     const extensionesValidas = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
     if (!extensionesValidas.includes(extension)) {
-        extension = 'jpg'; // Default si extensión no es válida
+        extension = 'jpg';
     }
     
     let nombreFinal = `${nombreBase}.${extension}`;
     let contador = 1;
     
-    // Si ya existe, agregar número hasta encontrar nombre único
     while (productos.some(p => p.imagen === nombreFinal)) {
         nombreFinal = `${nombreBase}-${contador}.${extension}`;
         contador++;
@@ -196,20 +299,15 @@ function generarNombreArchivoUnico(nombreOriginal, productos) {
 }
 
 // ========================
-// AGREGAR PRODUCTO (SISTEMA CORREGIDO - MANTIENE NOMBRE ORIGINAL)
+// AGREGAR PRODUCTO
 // ========================
 async function agregarProducto() {
-    // Obtener datos del formulario
     const nombre = document.getElementById('productName').value.trim();
     const categoria = document.getElementById('productCategory').value;
     const descripcion = document.getElementById('productDescription').value.trim();
     const imagenFile = document.getElementById('imageUpload').files[0];
     
-    // ========================
     // VALIDACIONES
-    // ========================
-    
-    // 1. Validar campos requeridos
     if (!nombre) {
         mostrarMensaje('❌ Ingresa el nombre del producto', 'error');
         return;
@@ -235,7 +333,6 @@ async function agregarProducto() {
         return;
     }
     
-    // 2. Verificar nombre duplicado (exacto)
     const productos = obtenerProductosLocales();
     const nombreExactoDuplicado = productos.some(producto => 
         producto.nombre.toLowerCase() === nombre.toLowerCase()
@@ -246,39 +343,15 @@ async function agregarProducto() {
         return;
     }
     
-    // 3. Verificar nombre similar (alerta)
-    const nombreSimilarDuplicado = productos.some(producto => 
-        producto.nombre.toLowerCase().includes(nombre.toLowerCase()) ||
-        nombre.toLowerCase().includes(producto.nombre.toLowerCase())
-    );
-    
-    if (nombreSimilarDuplicado) {
-        const confirmar = confirm(`⚠️ Advertencia: Ya existen productos con nombres similares a "${nombre}".\n\n¿Deseas continuar de todos modos?`);
-        if (!confirmar) return;
-    }
-    
-    // 4. Validar tamaño de archivo (máximo 5MB)
     if (imagenFile.size > 5 * 1024 * 1024) {
         mostrarMensaje('❌ La imagen es demasiado grande. Máximo 5MB.', 'error');
         return;
     }
     
-    // 5. Obtener nombre original del archivo
     const nombreArchivoOriginal = imagenFile.name;
-    
-    // 6. Generar nombre único (basado en el original)
     const nombreArchivoUnico = generarNombreArchivoUnico(nombreArchivoOriginal, productos);
     
-    // 7. Verificar si el nombre de archivo ya existe
-    const verificacionImagen = await verificarImagenDuplicada(nombreArchivoUnico, productos);
-    if (verificacionImagen.duplicado) {
-        const confirmar = confirm(`⚠️ El archivo "${nombreArchivoUnico}" ya existe en el producto: "${verificacionImagen.producto.nombre}".\n\n¿Deseas continuar de todos modos?`);
-        if (!confirmar) return;
-    }
-    
-    // ========================
-    // CONVERTIR IMAGEN A DATA URL PARA VISTA PREVIA LOCAL
-    // ========================
+    // Convertir imagen a Base64 para vista previa local
     let imagenPreview = '';
     try {
         imagenPreview = await convertirArchivoABase64(imagenFile);
@@ -287,24 +360,21 @@ async function agregarProducto() {
         return;
     }
     
-    // ========================
-    // CREAR Y GUARDAR PRODUCTO
-    // ========================
-    
-    const nuevoId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) + 1 : 1;
+    // Generar nuevo ID (buscar máximo actual + 1)
+    const maxId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) : 0;
+    const nuevoId = maxId + 1;
     
     const nuevoProducto = {
         id: nuevoId,
         nombre: nombre,
         categoria: categoria,
         descripcion: descripcion,
-        imagen_local: imagenPreview,        // ← Solo para vista previa en admin (Data URL)
-        imagen: nombreArchivoUnico,         // ← NOMBRE DEL ARCHIVO ORIGINAL (o único si ya existe)
+        imagen_local: imagenPreview,
+        imagen: nombreArchivoUnico,
         whatsapp: WHATSAPP_NUMBER,
         fecha: new Date().toISOString().split('T')[0]
     };
     
-    // Guardar
     productos.push(nuevoProducto);
     guardarProductosLocales(productos);
     mostrarProductosEnLista(productos);
@@ -315,30 +385,27 @@ async function agregarProducto() {
     document.getElementById('descCounter').style.color = '#7f8c8d';
     document.getElementById('fileUploadArea').style.display = 'block';
     document.getElementById('fileInfo').style.display = 'none';
-    document.getElementById('imageUrl').value = ''; // Limpiar URL si existe
+    document.getElementById('imageUrl').value = '';
     mostrarPlaceholderVacio();
     ocultarSugerencias();
     
-    // Mensaje con instrucciones
     const mensaje = nombreArchivoUnico === nombreArchivoOriginal
         ? `✅ Producto agregado exitosamente.<br><br>
            <strong>Nombre del archivo:</strong> <code>${nombreArchivoUnico}</code><br><br>
-           <strong>Instrucciones:</strong><br>
-           1. Sube el archivo <code>${nombreArchivoUnico}</code> a GitHub<br>
-           2. Luego exporta el JSON y súbelo también`
+           <strong>Recuerda:</strong> Para publicarlo en la tienda:<br>
+           1. Genera el JSON con "Publicar en la Tienda"<br>
+           2. Súbelo a GitHub`
         : `✅ Producto agregado exitosamente.<br><br>
-           <strong>Archivo original:</strong> ${nombreArchivoOriginal}<br>
            <strong>Archivo guardado como:</strong> <code>${nombreArchivoUnico}</code><br><br>
-           <em>Nota: Se cambió el nombre porque ya existía uno similar</em><br><br>
-           <strong>Instrucciones:</strong><br>
-           1. Sube el archivo <code>${nombreArchivoUnico}</code> a GitHub<br>
-           2. Luego exporta el JSON y súbelo también`;
+           <strong>Recuerda:</strong> Para publicarlo en la tienda:<br>
+           1. Genera el JSON con "Publicar en la Tienda"<br>
+           2. Súbelo a GitHub`;
     
     mostrarMensaje(mensaje, 'success');
 }
 
 // ========================
-// CONVERTIR ARCHIVO A BASE64 (solo para preview local)
+// CONVERTIR ARCHIVO A BASE64
 // ========================
 function convertirArchivoABase64(file) {
     return new Promise((resolve, reject) => {
@@ -360,7 +427,7 @@ function mostrarPlaceholderVacio() {
 }
 
 // ========================
-// MOSTRAR PRODUCTOS EN LISTA (CORREGIDO)
+// MOSTRAR PRODUCTOS EN LISTA
 // ========================
 function mostrarProductosEnLista(productos) {
     const productsList = document.getElementById('productsList');
@@ -379,7 +446,6 @@ function mostrarProductosEnLista(productos) {
     let html = '';
     
     productos.forEach(producto => {
-        // Nombre de categoría amigable
         const nombresCategorias = {
             'anillos': 'Anillos',
             'collares': 'Collares',
@@ -390,15 +456,16 @@ function mostrarProductosEnLista(productos) {
         };
         
         const categoriaNombre = nombresCategorias[producto.categoria] || producto.categoria;
-        
-        // Usar imagen local (Data URL) si existe, sino usar placeholder
         const imagenSrc = producto.imagen_local || 
                          `https://via.placeholder.com/100x100/764ba2/ffffff?text=${encodeURIComponent(producto.nombre.substring(0, 10))}`;
+        
+        // Determinar si el producto es solo local (tiene imagen_local)
+        const esSoloLocal = producto.imagen_local ? true : false;
         
         html += `
             <div class="product-item" data-id="${producto.id}">
                 <div class="product-header">
-                    <h3>${producto.nombre}</h3>
+                    <h3>${producto.nombre} ${esSoloLocal ? '<span class="local-badge">(LOCAL)</span>' : ''}</h3>
                     <span class="product-category">${categoriaNombre}</span>
                     <span class="product-date">${producto.fecha}</span>
                 </div>
@@ -413,6 +480,7 @@ function mostrarProductosEnLista(productos) {
                         <p><strong>Descripción:</strong> ${producto.descripcion.substring(0, 100)}${producto.descripcion.length > 100 ? '...' : ''}</p>
                         <p><strong>Archivo:</strong> <code>${producto.imagen}</code></p>
                         <p><strong>Ruta final:</strong> <small>${IMAGE_BASE_PATH}${producto.imagen}</small></p>
+                        ${esSoloLocal ? '<p class="local-warning"><small><i class="fas fa-exclamation-triangle"></i> Solo existe localmente</small></p>' : ''}
                     </div>
                 </div>
                 
@@ -432,7 +500,7 @@ function mostrarProductosEnLista(productos) {
 // ELIMINAR PRODUCTOS
 // ========================
 function eliminarProducto(id) {
-    if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+    if (!confirm('¿Estás seguro de eliminar este producto?\n\n⚠️ IMPORTANTE: Esto solo lo eliminará localmente. Para eliminarlo completamente, también debes actualizar el archivo JSON en GitHub.')) return;
     
     const productos = obtenerProductosLocales();
     const nuevosProductos = productos.filter(p => p.id !== id);
@@ -440,20 +508,31 @@ function eliminarProducto(id) {
     guardarProductosLocales(nuevosProductos);
     mostrarProductosEnLista(nuevosProductos);
     
-    mostrarMensaje('✅ Producto eliminado', 'success');
+    mostrarMensaje(
+        '✅ Producto eliminado localmente.<br><br>' +
+        '<strong>Recuerda:</strong> Para eliminarlo completamente:<br>' +
+        '1. Exporta el JSON actualizado<br>' +
+        '2. Súbelo a GitHub reemplazando el archivo existente',
+        'success'
+    );
 }
 
 function limpiarTodo() {
-    if (!confirm('¿Estás seguro de eliminar TODOS los productos? Esto no se puede deshacer.')) return;
+    if (!confirm('⚠️ ¿Estás seguro de eliminar TODOS los productos LOCALMENTE?\n\nEsto no afectará el archivo JSON en GitHub hasta que lo reemplace.')) return;
     
     localStorage.removeItem('productos_joyeria_avril');
     cargarProductosLocales();
     
-    mostrarMensaje('✅ Todos los productos han sido eliminados', 'success');
+    mostrarMensaje(
+        '✅ Todos los productos locales han sido eliminados.<br><br>' +
+        '<strong>Recuerda:</strong> Los productos aún existen en GitHub.<br>' +
+        'Para actualizar la tienda, sube un JSON vacío.',
+        'success'
+    );
 }
 
 // ========================
-// EXPORTAR A JSON (CORREGIDO - solo nombres de archivo)
+// EXPORTAR A JSON (PARA GITHUB)
 // ========================
 function exportarJSON() {
     const productos = obtenerProductosLocales();
@@ -463,17 +542,11 @@ function exportarJSON() {
         return;
     }
     
-    // Preparar productos para exportar (solo datos necesarios para la tienda)
+    // Preparar productos para exportar (sin imagen_local)
     const productosParaExportar = productos.map(producto => {
-        return {
-            id: producto.id,
-            nombre: producto.nombre,
-            categoria: producto.categoria,
-            descripcion: producto.descripcion,
-            imagen: producto.imagen,  // ← ¡SOLO EL NOMBRE DEL ARCHIVO!
-            whatsapp: WHATSAPP_NUMBER,
-            fecha: producto.fecha
-        };
+        // Crear copia sin imagen_local
+        const { imagen_local, ...productoParaExportar } = producto;
+        return productoParaExportar;
     });
     
     const jsonStr = JSON.stringify(productosParaExportar, null, 2);
@@ -489,84 +562,55 @@ function exportarJSON() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    // Mostrar resumen de archivos necesarios
     const archivosNecesarios = productos.map(p => p.imagen).join('\n• ');
     
     mostrarMensaje(
         `✅ JSON exportado con ${productos.length} productos.<br><br>
         <strong>Instrucciones para publicar:</strong><br>
-        1. Sube este JSON a: <code>data/products_joyeria.json</code><br>
-        2. Sube estas imágenes a: <code>${IMAGE_BASE_PATH}</code><br><br>
+        1. <strong>Sube este JSON</strong> a: <code>data/products_joyeria.json</code> (REEMPLAZA el existente)<br>
+        2. <strong>Sube estas imágenes</strong> a: <code>${IMAGE_BASE_PATH}</code><br><br>
         <strong>Archivos de imagen necesarios (${productos.length}):</strong><br>
-        • ${archivosNecesarios}`,
+        • ${archivosNecesarios}<br><br>
+        <strong>IMPORTANTE:</strong> Al reemplazar el JSON, la tienda mostrará SOLO estos productos.`,
         'success'
     );
 }
 
 // ========================
-// CARGAR DESDE ARCHIVO JSON REMOTO
+// CARGAR DESDE ARCHIVO JSON REMOTO (SINCRONIZACIÓN)
 // ========================
 async function cargarDesdeArchivo() {
-    if (!confirm('⚠️ Importante: Esto descargará productos desde GitHub y combinará con los locales.\n\n¿Continuar?')) return;
+    if (!confirm('⚠️ Esto sincronizará los productos locales con el archivo JSON actual.\n\n¿Deseas continuar?')) return;
     
     try {
-        // Intentar cargar desde GitHub
-        const response = await fetch('data/products_joyeria.json');
+        const productosSincronizados = await cargarJSONRemoto();
         
-        if (!response.ok) {
-            throw new Error(`No se pudo cargar el archivo JSON (Error ${response.status})`);
+        if (productosSincronizados.length === 0) {
+            mostrarMensaje(
+                "📝 <strong>No hay productos en el archivo JSON</strong><br><br>" +
+                "El archivo está vacío o no existe.<br>" +
+                "Agrega productos y expórtalos para crear el archivo.",
+                'info'
+            );
+        } else {
+            mostrarMensaje(
+                `✅ Sincronización completada.<br><br>
+                <strong>Total productos:</strong> ${productosSincronizados.length}<br>
+                <strong>Origen:</strong> Archivo JSON + Locales<br><br>
+                <strong>Nota:</strong> Exporta el JSON para guardar cambios.`,
+                'success',
+                5000
+            );
         }
-        
-        const productosRemotos = await response.json();
-        
-        if (!Array.isArray(productosRemotos)) {
-            throw new Error('El archivo JSON no contiene un array válido');
-        }
-        
-        // Obtener productos locales
-        const productosLocales = obtenerProductosLocales();
-        
-        // Combinar productos (evitar duplicados por ID)
-        const todosLosIds = new Set([
-            ...productosLocales.map(p => p.id),
-            ...productosRemotos.map(p => p.id)
-        ]);
-        
-        let productosCombinados = [];
-        
-        // Agregar productos locales primero
-        productosCombinados.push(...productosLocales);
-        
-        // Agregar productos remotos que no existan localmente
-        productosRemotos.forEach(productoRemoto => {
-            if (!productosLocales.some(p => p.id === productoRemoto.id)) {
-                // Convertir producto remoto al formato local (agregar campo imagen_local vacío)
-                productosCombinados.push({
-                    ...productoRemoto,
-                    imagen_local: '' // No tenemos la imagen localmente
-                });
-            }
-        });
-        
-        // Guardar combinación
-        guardarProductosLocales(productosCombinados);
-        mostrarProductosEnLista(productosCombinados);
-        
-        const nuevos = productosCombinados.length - productosLocales.length;
-        mostrarMensaje(
-            `✅ ${productosCombinados.length} productos cargados.<br>
-            • ${productosLocales.length} productos locales<br>
-            • ${nuevos} productos nuevos desde GitHub`,
-            'success'
-        );
         
     } catch (error) {
-        console.error('Error al cargar desde archivo:', error);
+        console.error('Error al sincronizar:', error);
         mostrarMensaje(
-            `❌ Error al cargar desde GitHub:<br>${error.message}<br><br>
+            `❌ Error al sincronizar:<br>${error.message}<br><br>
             Verifica que:<br>
             1. El archivo existe en: <code>data/products_joyeria.json</code><br>
-            2. El JSON tiene el formato correcto`,
+            2. Tienes conexión a internet<br>
+            3. El JSON tiene formato válido`,
             'error'
         );
     }
@@ -580,33 +624,39 @@ function actualizarContadores(cantidad) {
     document.getElementById('totalProducts').textContent = cantidad;
 }
 
-function mostrarMensaje(texto, tipo = 'info') {
+function mostrarMensaje(texto, tipo = 'info', autoCerrar = null) {
     const modal = document.getElementById('messageModal');
     const modalIcon = document.getElementById('modalIcon');
     const modalTitle = document.getElementById('modalTitle');
     const modalMessage = document.getElementById('modalMessage');
     
-    // Configurar ícono según tipo
     let iconClass = '';
     switch(tipo) {
         case 'success': 
             iconClass = 'fas fa-check-circle success-icon'; 
             modalTitle.textContent = '¡Éxito!'; 
-            modalMessage.innerHTML = texto; // Usar innerHTML para permitir <br>
             break;
         case 'error': 
             iconClass = 'fas fa-exclamation-circle error-icon'; 
             modalTitle.textContent = 'Error'; 
-            modalMessage.innerHTML = texto;
             break;
         default: 
             iconClass = 'fas fa-info-circle info-icon'; 
             modalTitle.textContent = 'Información';
-            modalMessage.textContent = texto;
     }
     
     modalIcon.className = iconClass;
+    modalMessage.innerHTML = texto;
     modal.style.display = 'flex';
+    
+    // Auto-cierre opcional
+    if (autoCerrar) {
+        setTimeout(() => {
+            if (modal.style.display === 'flex') {
+                cerrarModal();
+            }
+        }, autoCerrar);
+    }
 }
 
 function cerrarModal() {
@@ -614,10 +664,75 @@ function cerrarModal() {
 }
 
 // ========================
-// INICIALIZACIÓN DE EVENTOS EN EL FORMULARIO
+// DEBUG: Verificar rutas
 // ========================
-// Configurar contador de caracteres para descripción
 document.addEventListener('DOMContentLoaded', function() {
+    // Agregar estilos para el badge local
+    const estilos = document.createElement('style');
+    estilos.textContent = `
+        .local-badge {
+            background: #f39c12;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+        
+        .local-warning {
+            color: #e74c3c;
+            margin-top: 5px;
+            padding: 5px;
+            background: #ffeaea;
+            border-radius: 3px;
+            border-left: 3px solid #e74c3c;
+            font-size: 12px;
+        }
+        
+        .local-warning i {
+            margin-right: 5px;
+        }
+        
+        .sync-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 10px;
+            transition: background 0.3s;
+        }
+        
+        .sync-btn:hover {
+            background: #138496;
+        }
+    `;
+    document.head.appendChild(estilos);
+    
+    // Debug: mostrar información de ruta
+    console.log("📍 Ubicación actual:", window.location.href);
+    console.log("📁 Ruta del script:", document.currentScript ? document.currentScript.src : "N/A");
+    
+    // Cambiar botón a sync
+    setTimeout(() => {
+        const btnLoad = document.querySelector('.btn-load');
+        if (btnLoad) {
+            btnLoad.classList.add('sync-btn');
+            btnLoad.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizar con JSON';
+        }
+    }, 100);
+});// ========================
+// CONFIGURACIÓN DE INTERFAZ
+// ========================
+
+// Contador de caracteres para descripción
+function configurarContadorCaracteres() {
     const descTextarea = document.getElementById('productDescription');
     if (descTextarea) {
         descTextarea.addEventListener('input', function() {
@@ -633,6 +748,83 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+}
+
+// Configurar subida de archivos
+function configurarSubidaArchivos() {
+    const fileUpload = document.getElementById('imageUpload');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const fileInfo = document.getElementById('fileInfo');
     
-    // Configurar subida de archivos (ya está en admin.html)
-});
+    if (!fileUpload || !fileUploadArea) return;
+    
+    // Evento para seleccionar archivo
+    fileUpload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            mostrarInformacionArchivo(file);
+            mostrarVistaPreviaArchivo(file);
+        }
+    });
+    
+    // Arrastrar y soltar
+    fileUploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.background = '#f0f0f0';
+        this.style.borderColor = '#764ba2';
+    });
+    
+    fileUploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.style.background = '';
+        this.style.borderColor = '';
+    });
+    
+    fileUploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.style.background = '';
+        this.style.borderColor = '';
+        
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            fileUpload.files = e.dataTransfer.files;
+            mostrarInformacionArchivo(file);
+            mostrarVistaPreviaArchivo(file);
+        } else {
+            alert('Por favor, selecciona solo archivos de imagen (JPG, PNG, GIF)');
+        }
+    });
+}
+
+function mostrarInformacionArchivo(file) {
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const fileInfo = document.getElementById('fileInfo');
+    
+    if (fileName) fileName.textContent = file.name;
+    if (fileSize) fileSize.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+    if (fileUploadArea) fileUploadArea.style.display = 'none';
+    if (fileInfo) fileInfo.style.display = 'block';
+}
+
+function mostrarVistaPreviaArchivo(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewContainer = document.getElementById('previewContainer');
+        if (previewContainer) {
+            previewContainer.innerHTML = `
+                <div class="preview-content">
+                    <img src="${e.target.result}" 
+                         alt="Vista previa" 
+                         class="preview-image">
+                    <div class="preview-info">
+                        <p><small>${file.name} (${(file.size / 1024).toFixed(0)} KB)</small></p>
+                    </div>
+                </div>
+            `;
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
