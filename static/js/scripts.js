@@ -1,59 +1,63 @@
 // ============================================
-// ARCHIVO: main.js
-// DESCRIPCIÓN: Funcionalidades básicas para Joyería Avril
-// FUNCIONALIDADES: Menú móvil y eventos básicos
+// ARCHIVO: scripts.js - CORREGIDO
+// DESCRIPCIÓN: Funcionalidades para Joyería Avril
 // ============================================
 
-// ========================
-// VARIABLES GLOBALES
-// ========================
-const menuToggle = document.getElementById('menuToggle');
-const navMenu = document.querySelector('.nav-menu');
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOM cargado - Inicializando Joyería Avril');
+    
+    // Inicializar todas las funcionalidades
+    inicializarMenuMovil();
+    inicializarScrollSuave();
+    inicializarHeroScroll();
+});
 
 // ========================
-// FUNCIÓN PRINCIPAL DE INICIALIZACIÓN
+// 1. MENÚ MÓVIL - VERSIÓN SIMPLIFICADA Y CORREGIDA
 // ========================
-function inicializarAplicacion() {
-    // 1. Configurar menú móvil
-    configurarMenuMovil();
+function inicializarMenuMovil() {
+    const menuToggle = document.getElementById('menuToggle');
+    const navMenu = document.querySelector('.nav-menu');
     
-    // 2. Configurar eventos adicionales
-    configurarEventosAdicionales();
-    
-    // 3. Cualquier otra inicialización necesaria
-    console.log('✅ Joyería Avril - Aplicación inicializada');
-}
-
-// ========================
-// CONFIGURAR MENÚ MÓVIL
-// ========================
-function configurarMenuMovil() {
+    // Verificar que existan los elementos
     if (!menuToggle || !navMenu) {
-        console.warn('⚠️ Elementos del menú no encontrados');
+        console.error('❌ ERROR: No se encontraron los elementos del menú');
         return;
     }
     
-    // Toggle del menú al hacer clic en el botón hamburguesa
-    menuToggle.addEventListener('click', () => {
+    console.log('✅ Elementos del menú encontrados');
+    
+    // Evento para abrir/cerrar menú
+    menuToggle.addEventListener('click', function(event) {
+        event.stopPropagation(); // Importante: evitar que el clic se propague
+        
+        // Alternar clase 'active' en el menú
         navMenu.classList.toggle('active');
-        menuToggle.innerHTML = navMenu.classList.contains('active') 
-            ? '<i class="fas fa-times"></i>' 
-            : '<i class="fas fa-bars"></i>';
+        
+        // Cambiar ícono
+        if (navMenu.classList.contains('active')) {
+            menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+            console.log('📱 Menú ABIERTO');
+        } else {
+            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            console.log('📱 Menú CERRADO');
+        }
     });
     
-    // Cerrar menú al hacer clic en cualquier enlace
+    // Cerrar menú al hacer clic en enlaces
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
-        link.addEventListener('click', () => {
+        link.addEventListener('click', function() {
             if (navMenu.classList.contains('active')) {
                 navMenu.classList.remove('active');
                 menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                console.log('📱 Menú cerrado por clic en enlace');
             }
         });
     });
     
-    // Cerrar menú al hacer clic fuera de él
-    document.addEventListener('click', (event) => {
+    // Cerrar menú al hacer clic fuera (opcional pero recomendado)
+    document.addEventListener('click', function(event) {
         const isClickInsideMenu = navMenu.contains(event.target);
         const isClickOnToggle = menuToggle.contains(event.target);
         
@@ -62,122 +66,87 @@ function configurarMenuMovil() {
             menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
         }
     });
+    
+    // Cerrar menú al cambiar a desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768 && navMenu.classList.contains('active')) {
+            navMenu.classList.remove('active');
+            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        }
+    });
 }
 
 // ========================
-// CONFIGURAR EVENTOS ADICIONALES
+// 2. SCROLL SUAVE PARA ENLACES INTERNOS
 // ========================
-function configurarEventosAdicionales() {
-    // 1. Smooth scroll para enlaces internos
+function inicializarScrollSuave() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            
+        anchor.addEventListener('click', function(event) {
             const targetId = this.getAttribute('href');
+            
+            // Si es solo '#', no hacer nada
             if (targetId === '#') return;
             
             const targetElement = document.querySelector(targetId);
+            
             if (targetElement) {
+                event.preventDefault();
+                
                 window.scrollTo({
                     top: targetElement.offsetTop - 80, // Ajustar por header fijo
                     behavior: 'smooth'
                 });
+                
+                console.log(`🔍 Scroll a: ${targetId}`);
             }
         });
     });
-    
-    // 2. Animación de scroll en hero
+}
+
+// ========================
+// 3. SCROLL EN HERO
+// ========================
+function inicializarHeroScroll() {
     const heroScroll = document.querySelector('.hero-scroll');
+    
     if (heroScroll) {
-        heroScroll.addEventListener('click', () => {
+        heroScroll.addEventListener('click', function() {
             const categoriesSection = document.querySelector('.categories');
+            
             if (categoriesSection) {
                 window.scrollTo({
                     top: categoriesSection.offsetTop - 80,
                     behavior: 'smooth'
                 });
+                
+                console.log('🔍 Scroll a sección de categorías');
             }
         });
     }
-    
-    // 3. Tooltips para botones de WhatsApp
-    const whatsappBtns = document.querySelectorAll('.whatsapp-btn, .floating-whatsapp');
-    whatsappBtns.forEach(btn => {
-        btn.addEventListener('mouseenter', () => {
-            // Podríamos agregar tooltips dinámicos aquí si es necesario
-        });
-    });
-    
-    // 4. Prevenir envío de formularios (si hay alguno)
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            console.log('Formulario prevenido - página estática');
-        });
-    });
 }
 
 // ========================
-// FUNCIONES DE UTILIDAD
+// FUNCIÓN DE DEPURACIÓN
 // ========================
-function esMovil() {
-    return window.innerWidth <= 768;
+function depurarMenu() {
+    console.log('🔍 DEPURACIÓN DEL MENÚ:');
+    console.log('menuToggle:', document.getElementById('menuToggle'));
+    console.log('navMenu:', document.querySelector('.nav-menu'));
+    console.log('Clase de navMenu:', document.querySelector('.nav-menu').className);
+    console.log('Ancho de ventana:', window.innerWidth);
 }
 
-function recargarPagina() {
-    window.location.reload();
-}
+// Hacer disponible para depuración en consola
+window.depurarMenu = depurarMenu;
 
 // ========================
-// MANEJADORES DE ERRORES
-// ========================
-window.addEventListener('error', function(e) {
-    console.error('❌ Error capturado:', e.message);
-});
-
-// ========================
-// INICIALIZACIÓN AL CARGAR EL DOM
-// ========================
-document.addEventListener('DOMContentLoaded', inicializarAplicacion);
-
-// ========================
-// MANEJAR CAMBIOS DE TAMAÑO DE VENTANA
-// ========================
-let resizeTimeout;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-        // Cerrar menú móvil al cambiar a desktop
-        if (window.innerWidth > 768 && navMenu) {
-            navMenu.classList.remove('active');
-            if (menuToggle) {
-                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-            }
-        }
-    }, 250);
-});
-
-// ========================
-// EXPORTAR FUNCIONES (si se necesitan globalmente)
-// ========================
-// Esto permite llamar a las funciones desde la consola del navegador si es necesario
-if (typeof window !== 'undefined') {
-    window.JoyeriaAvril = {
-        recargarPagina,
-        esMovil,
-        inicializarAplicacion
-    };
-}
-
-// ========================
-// CONSOLA DE BIENVENIDA
+// MENSAJE DE CONSOLA
 // ========================
 console.log(`
 ╔══════════════════════════════════════╗
 ║      🛍️  Joyería Avril              ║
-║      Versión: 1.0.0                 ║
-║      Estado: Página estática        ║
-║      Cargada correctamente ✅        ║
+║      Script: scripts.js             ║
+║      Menú móvil: ACTIVADO ✅        ║
+║      Scroll suave: ACTIVADO ✅      ║
 ╚══════════════════════════════════════╝
 `);
