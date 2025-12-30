@@ -31,7 +31,7 @@ body {
     padding: 0 20px;
 }
 
-/* ===== HEADER Y NAVEGACIÓN ===== */
+/* ===== HEADER Y NAVEGACIÓN - ALTURA FIJA ===== */
 .header {
     background: white;
     box-shadow: var(--shadow);
@@ -39,13 +39,15 @@ body {
     width: 100%;
     top: 0;
     z-index: 1000;
+    height: 70px; /* ALTURA FIJA */
 }
 
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 0;
+    height: 70px; /* ALTURA FIJA IGUAL AL HEADER */
+    padding: 0;
 }
 
 .logo a {
@@ -142,18 +144,18 @@ body {
     z-index: 1001;
 }
 
-/* ===== HERO SECTION ===== */
+/* ===== HERO SECTION - CORREGIDO PARA GITHUB PAGES ===== */
 .hero {
-    height: 100vh;
+    height: calc(100vh - 70px); /* RESTA LA ALTURA DEL HEADER */
     background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-                url('/archivos/NoTocarEstasFotos/fondoPantalla.jpeg');
+                url('archivos/NoTocarEstasFotos/fondoPantalla.jpeg'); /* RUTA RELATIVA */
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;
     display: flex;
     align-items: center;
     position: relative;
-    margin-top: 70px;
+    /* NO USAR margin-top */
 }
 
 .hero-content {
@@ -247,7 +249,7 @@ body {
     font-size: 1.1rem;
 }
 
-/* ===== CATEGORÍAS ===== */
+/* ===== CATEGORÍAS - RUTAS CORREGIDAS ===== */
 .categories {
     padding: 100px 0;
     background: var(--light-color);
@@ -282,6 +284,31 @@ body {
     background-size: cover;
     background-position: center;
     transition: var(--transition);
+}
+
+/* RUTAS RELATIVAS PARA LAS IMÁGENES DE CATEGORÍAS */
+.categories-grid .category-card:nth-child(1) .category-bg {
+    background-image: url('archivos/NoTocarEstasFotos/fondoAnillo.jpeg');
+}
+
+.categories-grid .category-card:nth-child(2) .category-bg {
+    background-image: url('archivos/NoTocarEstasFotos/fondoCollar.jpeg');
+}
+
+.categories-grid .category-card:nth-child(3) .category-bg {
+    background-image: url('archivos/NoTocarEstasFotos/fondoPulsera.jpeg');
+}
+
+.categories-grid .category-card:nth-child(4) .category-bg {
+    background-image: url('archivos/NoTocarEstasFotos/fondoArgollas.jpeg');
+}
+
+.categories-grid .category-card:nth-child(5) .category-bg {
+    background-image: url('archivos/NoTocarEstasFotos/fondoReloj.jpeg');
+}
+
+.categories-grid .category-card:nth-child(6) .category-bg {
+    background-image: url('archivos/NoTocarEstasFotos/fondoPiercings.jpeg');
 }
 
 .category-card:hover .category-bg {
