@@ -148,7 +148,7 @@ body {
 .hero {
     height: calc(100vh - 70px); /* RESTA LA ALTURA DEL HEADER */
     background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-                url('archivos/NoTocarEstasFotos/fondoPantalla.jpeg'); /* RUTA RELATIVA */
+                url('https://consultasavril-cmd.github.io/joyeria-avril/archivos/NoTocarEstasFotos/fondoPantalla.jpeg'); /* RUTA RELATIVA */
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;
